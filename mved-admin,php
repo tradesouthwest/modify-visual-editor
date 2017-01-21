@@ -1,0 +1,146 @@
+<?php
+//Modify Visual Editor
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+
+
+//init actions
+add_action( 'admin_menu', 'mved__add_admin_menu' );
+add_action( 'admin_init', 'mved__settings_init' );
+
+//add a new menu for the admin
+function mved__add_admin_menu(  ) {
+
+	add_menu_page( 'Modify Visual Editor', 'Modify Visual Editor', 'manage_options', 'modify_visual_editor', 'mved__options_page' );
+
+}
+
+//settings
+function mved__settings_init(  ) {
+
+	register_setting(
+        'pluginPage',
+        'mved__settings'
+    );
+
+	register_setting(
+        'pluginPage',
+        'mved__checkbox_field_0',
+        'mved_sanitize_checkbox'
+    );
+
+	add_settings_section(
+		'mved__pluginPage_section',
+		__( 'Turn Off Visual Editor Drastically', 'mved' ),
+		'mved__settings_section_callback',
+		'pluginPage'
+	);
+
+    //$option, $value, $deprecated, $autoload
+    add_option(
+        'mved__checkbox_field_val',
+        '1',
+        '',
+        'yes'
+    );
+
+	add_settings_field(
+		'mved__checkbox_field_0',
+		__( 'Disallow use of Visual Editor completely', 'mved' ),
+		'mved__checkbox_field_0_render',
+		'pluginPage',
+		'mved__pluginPage_section'
+	);
+}
+
+//render field
+function mved__checkbox_field_0_render(  ) {
+	$options = get_option( 'mved__settings' );
+	?><div class="wrap">
+	<label class="switch"><input type='checkbox' name='mved__settings[mved__checkbox_field_0]' <?php checked( $options['mved__checkbox_field_val'], 1 ); ?> value=''><div class="slider"></div></label>
+	<?php
+}
+
+//callback
+function mved__settings_section_callback(  ) {
+
+	echo __( 'Turn On or Off the Visual Editor to avoid conflicts with other users editing a page or post', 'mved' );
+}
+
+//display page
+function mved__options_page(  ) {
+
+	  ?><form method="post" action="">
+
+		<h2>Modify Visual Editor</h2>
+
+		<?php
+		settings_fields( 'pluginPage' );
+		do_settings_sections( 'pluginPage' );
+		submit_button();
+		?>
+
+	</form></div>
+	<?php
+}
+
+
+
+
+/**
+ * Disable the visual editor for all users
+ *
+ * Ignores the passed $userID because we're disabling for all users.
+ */
+function update_modify_visual_editor()
+{
+
+//update  $option, $new_value, $autoload
+update_option( $option, $_POST['mved__checkbox_field_0'], 'yes' );
+
+
+$option = get_option( 'mved__checkbox_field_val' );
+$mved__checkbox_field = $option['mved__checkbox_field_0'];
+
+
+if( $mved__checkbox_field == 1 )
+{
+ 	global $wpdb;
+
+    	$wpdb->query("UPDATE `" . $wpdb->prefix . "usermeta`
+                    SET `meta_value` = 'false'
+                    WHERE `meta_key` = 'rich_editing'");
+        if( $wpdb )
+        {
+
+
+        echo '<div class="updated"><p><strong> Updated <br/> '.$message;
+    	echo '</strong></p></div>';
+        } else {
+
+		  echo $message3;
+
+        }
+    } else { delete_option( $mved__checkbox_field ); echo $message2; }
+}
+
+/**
+ * Add an action to catch profile updates and new users.
+ */
+add_action( 'profile_update', 'update_modify_visual_editor' );
+add_action( 'user_register', 'update_modify_visual_editor' );
+
+
+
+
+/**
+ * @param bool $checked Whether the checkbox is checked.
+ * @return bool Whether the checkbox is checked.
+ */
+function mved_sanitize_checkbox( $input ) {
+	// Quasi-Boolean check
+$valid_input = array (true, false, 1, 0, 'yes', 'no', null);
+if( in_array ( $input, $valid_input ) ) {
+return $input; }
+}
+?>
