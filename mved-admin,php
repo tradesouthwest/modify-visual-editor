@@ -3,88 +3,259 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 
-
 //init actions
-add_action( 'admin_menu', 'mved__add_admin_menu' );
-add_action( 'admin_init', 'mved__settings_init' );
+add_action( 'admin_menu', 'mved_add_admin_menu' );
+add_action( 'admin_init', 'mved_settings_init' );
 
 //add a new menu for the admin
-function mved__add_admin_menu(  ) {
+// $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position
+function mved_add_admin_menu() {
 
-	add_menu_page( 'Modify Visual Editor', 'Modify Visual Editor', 'manage_options', 'modify_visual_editor', 'mved__options_page' );
+	add_menu_page(
+         __( 'Modify Visual Editor', 'mved' ),
+         __( 'Settings for MVED', 'mved' ),
+        'manage_options',
+        'modify-visual-editor',
+        'mved_options_page'
+        );
 
 }
 
 //settings
-function mved__settings_init(  ) {
+function mved_settings_init(  ) {
 
 	register_setting(
         'pluginPage',
-        'mved__settings'
+        'mved_settings'
     );
 
 	register_setting(
         'pluginPage',
-        'mved__checkbox_field_0',
-        'mved_sanitize_checkbox'
+        'mvedASelect',
+        'sanitize_textfield'
     );
 
 	add_settings_section(
-		'mved__pluginPage_section',
+		'mved_pluginPage_section',
 		__( 'Turn Off Visual Editor Drastically', 'mved' ),
-		'mved__settings_section_callback',
+		'mved_settings_section_callback',
 		'pluginPage'
 	);
 
-    //$option, $value, $deprecated, $autoload
+	add_settings_field(
+		'mvedASelect',
+		__( 'Select to Turn ON or OFF Visual Editor', 'mved' ),
+		'mved_selection_field_render',
+		'pluginPage',
+		'mved_pluginPage_section'
+	);
+
     add_option(
-        'mved__checkbox_field_val',
-        '1',
+        'mvedASelect',
+        'true',
         '',
         'yes'
     );
+}
 
-	add_settings_field(
-		'mved__checkbox_field_0',
-		__( 'Disallow use of Visual Editor completely', 'mved' ),
-		'mved__checkbox_field_0_render',
-		'pluginPage',
-		'mved__pluginPage_section'
-	);
+function mved_disable_visual_editor($meta_key, $meta_value) {
+
+    update_user_meta( '', $meta_key, $meta_value );
+
 }
 
 //render field
-function mved__checkbox_field_0_render(  ) {
-	$options = get_option( 'mved__settings' );
-	?><div class="wrap">
-	<label class="switch"><input type='checkbox' name='mved__settings[mved__checkbox_field_0]' <?php checked( $options['mved__checkbox_field_val'], 1 ); ?> value=''><div class="slider"></div></label>
-	<?php
+function mved_selection_field_render()
+{
+    if (isset($_POST['mvedASelect'])) {
+
+        $mvedASelect       = $_POST['mvedASelect'];
+        update_option('mvedASelect', $_POST['mvedASelect']);
+
+        $mvedASelect_key   = 'rich_edting';
+        $mvedASelect_value = get_option('mvedASelect', 'true');
+
+        //update user meta field `rich_editing`
+       $user_query = update_user_meta( '', $mvedASelect_key, $mvedASelect_value );
+
+    if($user_query)
+        {
+        $message = "works";
+    echo '<div class="updated"><p><strong> Editor is set <br/> '. $message;
+    echo '</strong></p></div>';
+        }
+        else { echo $mvedASelect_value . 'no_go';
+            }
+    }
+
+    //$value
+
+    //grab content
+
+    /**
+     * Query MySQL DB for its version
+     * @return string|false
+     */
+    function getMySqlVersion() {
+        global $wpdb;
+        $rows = $wpdb->get_results('select version() as mysqlversion');
+        if (!empty($rows)) {
+             return $rows[0]->mysqlversion;
+        }
+        return false;
+    }
+?>
+        <div class="wrap">
+            <h2><?php _e('System Settings', 'mved'); ?></h2>
+            <table cellspacing="1" cellpadding="2"><tbody>
+            <tr><td><?php _e('System', 'mved'); ?></td><td><?php echo php_uname(); ?></td></tr>
+            <tr><td><?php _e('PHP Version', 'mved'); ?></td>
+                <td><?php echo phpversion(); ?>
+                <?php
+                if (version_compare('5.2', phpversion()) > 0) {
+                    echo '&nbsp;&nbsp;&nbsp;<span style="background-color: #ffcc00;">';
+                    _e('(WARNING: This plugin may not work properly with versions earlier than PHP 5.2)', 'mved');
+                    echo '</span>';
+                }
+                ?>
+                </td>
+            </tr>
+            <tr><td><?php _e('MySQL Version', 'mved'); ?></td>
+                <td><?php echo getMySqlVersion(); ?>
+                    <?php
+                    echo '&nbsp;&nbsp;&nbsp;<span style="background-color: #ffcc00;">';
+                    if (version_compare('5.0', getMySqlVersion()) > 0) {
+                        _e('(WARNING: This plugin may not work properly with versions earlier than MySQL 5.0)', 'mved');
+                    }
+                    echo '</span>';
+                    ?>
+                </td>
+            </tr>
+            </tbody></table>
+            <h2><?php _e( 'Settings for MVED', 'mved' ); ?></h2>
+
+            <form method="post" action="">
+            <?php settings_fields('mved_settings'); ?>
+
+<form name"mved_usermeta_form" method="POST" action="">
+
+                <style type="text/css">
+                    table.plugin-options-table {width: 100%; padding: 0;}
+                    table.plugin-options-table tr:nth-child(even) {background: #f9f9f9}
+                    table.plugin-options-table tr:nth-child(odd) {background: #FFF}
+                    table.plugin-options-table tr:first-child {width: 35%;}
+                    table.plugin-options-table td {vertical-align: middle;}
+                    table.plugin-options-table td+td {width: auto}
+                    table.plugin-options-table td > p {margin-top: 0; margin-bottom: 0;}
+                </style>
+                <table class="plugin-options-table"><tbody>
+                    <tr valign="top">
+                        <th scope="row"><p><label for="mvedASelect"><?php __( 'Turns On or Off the Visual Editor', 'mved' ); ?></label></p></th>
+                        <td><p><select name="mvedASelect" id="mvedASelect">
+                               <option value="false" >false</option>
+                               <option value="true" >true</option>
+                               </select></p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row"><p><label for="mvedULevel">Which user role can do something</label></p></th>
+                                <td>
+                                            <p><select name="mvedULevel" id="mvedULevel">
+                                <option value="Administrator" selected>Administrator</option>
+                                    <option value="Editor" >Editor</option>
+                                    <option value="Author" >Author</option>
+                                    <option value="Contributor" >Contributor</option>
+                                    <option value="Subscriber" >Subscriber</option>
+                                    <option value="Anyone" >Anyone</option>
+                            </select></p>
+                                            </td>
+                            </tr>
+                </tbody></table>
+<?php
+    // create a nonce field
+    wp_nonce_field( 'new_mvedASelect_nonce', 'mvedASelect_nonce' );
+?>
+                <p class="submit"><input type="submit" class="button-primary"
+                          value="<?php _e('Save Changes', 'mved') ?>"/>
+                </p>
+            </form>
+        </div>
+
+<div class="section">
+<!--
+<form name="mved_get_usermeta_form" action="" method="POST" onsubmit="return get_user_by_meta_data();">
+<input type="submit" value="View ALL users status" id="viewAll">
+</form>
+<div id="get_user_by_meta_data"></div>
+-->
+</div>
+
+</div>
+
+
+    </div>
+<?php
 }
+?>
+<?php
 
 //callback
-function mved__settings_section_callback(  ) {
+function mved_settings_section_callback(  ) {
 
-	echo __( 'Turn On or Off the Visual Editor to avoid conflicts with other users editing a page or post', 'mved' );
+echo __( 'Turns On or Off the Visual Editor to disallow using Visual Editor tab.', 'mved' );
+
 }
 
-//display page
-function mved__options_page(  ) {
 
-	  ?><form method="post" action="">
+//display page
+function mved_options_page()
+{
+
+	  ?>
+
 
 		<h2>Modify Visual Editor</h2>
 
 		<?php
 		settings_fields( 'pluginPage' );
 		do_settings_sections( 'pluginPage' );
-		submit_button();
 		?>
 
-	</form></div>
+
+
 	<?php
+
 }
 
 
+//gets value of usermeta
+function get_user_by_meta_data( $meta_key, $meta_value ) {
+
+	// Query for users based on the meta data
+	$user_query = new WP_User_Query(
+		array(
+			'meta_key'	 =>	'rich_editing',
+			'meta_value' =>	$metavalue
+		)
+	);
+	// Get the results from the query, returning the first user
+	$users = $user_query->get_results();
+
+	return $user = empty ( $users[0] ) ? null : $users[0];
+
+} // end get_user_by_meta_data
+
+
+
+    /**
+     * @param  $name string name of a database table
+     * @return string input prefixed with the WordPress DB table prefix
+     * plus the prefix for this plugin 
+     */
+    function prefixTableName($name) {
+        global $wpdb;
+        return $wpdb->prefix .  strtolower($this->prefix($name));
+    }
 
 
 /**
@@ -92,55 +263,21 @@ function mved__options_page(  ) {
  *
  * Ignores the passed $userID because we're disabling for all users.
  */
-function update_modify_visual_editor()
-{
-
-//update  $option, $new_value, $autoload
-update_option( $option, $_POST['mved__checkbox_field_0'], 'yes' );
-
-
-$option = get_option( 'mved__checkbox_field_val' );
-$mved__checkbox_field = $option['mved__checkbox_field_0'];
-
-
-if( $mved__checkbox_field == 1 )
-{
- 	global $wpdb;
-
-    	$wpdb->query("UPDATE `" . $wpdb->prefix . "usermeta`
-                    SET `meta_value` = 'false'
-                    WHERE `meta_key` = 'rich_editing'");
-        if( $wpdb )
-        {
-
-
-        echo '<div class="updated"><p><strong> Updated <br/> '.$message;
-    	echo '</strong></p></div>';
-        } else {
-
-		  echo $message3;
-
-        }
-    } else { delete_option( $mved__checkbox_field ); echo $message2; }
-}
+//$user_id, $meta_key, $meta_value
 
 /**
  * Add an action to catch profile updates and new users.
  */
-add_action( 'profile_update', 'update_modify_visual_editor' );
-add_action( 'user_register', 'update_modify_visual_editor' );
 
+add_action( 'profile_update', 'mved__update_usermeta_modify_visual_editor' );
+add_action( 'user_register', 'mved__update_usermeta_modify_visual_editor' );
 
-
-
-/**
- * @param bool $checked Whether the checkbox is checked.
- * @return bool Whether the checkbox is checked.
- */
-function mved_sanitize_checkbox( $input ) {
-	// Quasi-Boolean check
-$valid_input = array (true, false, 1, 0, 'yes', 'no', null);
-if( in_array ( $input, $valid_input ) ) {
-return $input; }
+function requireExtraPluginFiles() {
+        require_once(ABSPATH . 'wp-includes/pluggable.php');
+        require_once(ABSPATH . 'wp-includes/user.php');
+        require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+        
 }
+
+
 ?>
