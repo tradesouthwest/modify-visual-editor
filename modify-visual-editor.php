@@ -21,16 +21,24 @@ if ( ! is_admin() ) return; // Only load plugin when user is in admin
 define( 'MVED_VERSION', '0.1.0' );
 
 
-
-
 //activate/deactivate hooks
 function modify_visual_editor_activation() {
-}
-register_activation_hook(__FILE__, 'modify_visual_editor_activation');
-function modify_visual_editor_deactivation() {
-}
-register_deactivation_hook(__FILE__, 'modify_visual_editor_deactivation');
 
+}
+    register_activation_hook(__FILE__, 'modify_visual_editor_activation');
+
+function modify_visual_editor_deactivation() {
+//run_deinstallSetToTrue()
+   // Query for users based on the meta data
+	$user_query = new WP_User_Query(
+		array(
+			'meta_key'	 =>	'rich_editing',
+			'meta_value' =>	'true'
+		)
+	);
+
+}
+    register_deactivation_hook(__FILE__, 'modify_visual_editor_deactivation');
 
 
 
@@ -48,8 +56,6 @@ function modify_visual_editor_load_plugin_textdomain() {
     load_plugin_textdomain( 'mved-domain', FALSE, plugins_url( basename( __DIR__ )) . '/languages/' );
 }
 add_action( 'plugins_loaded', 'modify_visual_editor_load_plugin_textdomain' );
-
-
 
 
 /** Disable WordPress Admin Bar for all users but admins.
