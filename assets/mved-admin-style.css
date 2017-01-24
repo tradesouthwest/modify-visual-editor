@@ -2,65 +2,19 @@
 Modify Visual Editor plugin
 TSW =|=
  */
-table{border-bottom: 1px solid #ddd;}
- /* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
+table.plugin-options-table { float:left; width: 86%; padding: 2px; margin: 0;}
+table.plugin-options-table tr:nth-child(even) { background: #f9f9f9}
+table.plugin-options-table tr:nth-child(odd) { background: #FFF}
+table.plugin-options-table td:first-child { width: 58%;}
+table.plugin-options-table td { vertical-align: middle; padding:5px; color: black;}
+table.plugin-options-table td+td { width: auto}
+table.plugin-options-table th { padding: 8px;}
+table.plugin-options-table td > p { margin-top: 0; margin-bottom: 0;}
+.table-condensed-options-table { padding: 8px; margin: 0; background: #fafafa; }
+.table-condensed-options-table tr > td {
+padding: 0 7px; margin: 0; border-bottom: thin solid #bef; }
 
-/* Hide default HTML checkbox */
-.switch input {display:none;}
+#tswMved small { position:relative; top: -1em; }
+#tswMved {margin: 0; padding:0; }
 
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "X";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  color:black;
-  font-size: 14px;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
 /* Have A Wonderful time */
