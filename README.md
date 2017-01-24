@@ -1,17 +1,12 @@
 # modify-visual-editor
 plugin modifies the WordPress visual editor
 
-Contributors: 
-
-Donate link: http://tradesouthwest.com/paystation.php/
-
-Tags: visual editor, disable visual editor, tinymce, disable tinymce
-
-Requires at least: 0.1.0
-
-Tested up to: 0.1.0
-
-Stable tag: 0.1.0
+Contributors:  
+Donate link: http://tradesouthwest.com/paystation.php/ 
+Tags: visual editor, disable visual editor, tinymce, disable tinymce 
+Requires at least: 1.0 
+Tested up to: 1.0 
+Stable tag: 1.0
 
 
 This plugin disables the visual editor for all users across the whole site. You could also remove the wp-includes/js/tinymce/ directory. This actually leaves the editor in place for posts and pages as well as custom posts types. Very handy for developers who do not want other users changing HTML text. Plugin can reset the database ( prefix_wp_usermeta ) back to 'true for meta_value 'rich_edting' and clears options so plugin will not linger after uninstall.
