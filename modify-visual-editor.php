@@ -18,8 +18,8 @@ if ( ! is_admin() ) return; // Only load plugin when user is in admin
 //wp_cache_delete ( 'alloptions', 'options' );
 //Predefined Constants
 
-define( 'MVED_VERSION', '0.1.0' );
-
+define( 'MVED_VERSION', '1.0' );
+define( 'MVED_URI', '' );
 
 //activate/deactivate hooks
 function modify_visual_editor_activation() {
@@ -27,19 +27,31 @@ function modify_visual_editor_activation() {
 }
     register_activation_hook(__FILE__, 'modify_visual_editor_activation');
 
+/**
+ * house keeeping after uninstall
+ * $user_id is null
+ */
+function mved_update_user_editor_status($user_id, $old_user_data){
+	global $wpdb;
+
+	$wpdb->query("UPDATE `" . $wpdb->prefix .
+    "usermeta` SET `meta_value` = '".$old_user_data."'
+            WHERE `meta_key` = 'rich_editing'");
+
+return false;
+}
 function modify_visual_editor_deactivation() {
-//run_deinstallSetToTrue()
-   // Query for users based on the meta data
-	$user_query = new WP_User_Query(
-		array(
-			'meta_key'	 =>	'rich_editing',
-			'meta_value' =>	'true'
-		)
-	);
+    //clean up database and option cache
+    wp_cache_delete ( 'alloptions', 'options' );
+    //remove hook in profile_update
+    remove_action('profile_update','mved_update_user_editor_status');
+    //return to normal
+    mved_update_user_editor_status('', 'true');
+    //add update just once
+    add_action('profile_update','mved_update_user_editor_status');
 
 }
     register_deactivation_hook(__FILE__, 'modify_visual_editor_deactivation');
-
 
 
 /** enqueue scripts
@@ -47,7 +59,9 @@ function modify_visual_editor_deactivation() {
  * mved-domain-de_DE.mo and mved-domain-de_DE.po.
 */
 function modify_visual_editor_enqueue_scripts() {
-    wp_enqueue_style( 'mved-admin-style', plugins_url( basename( __DIR__ )) .'/assets/mved-admin-style.css', array(), MVED_VERSION );
+    wp_enqueue_style( 'mved-admin-style',
+        plugins_url( basename( __DIR__ )) .
+        '/assets/mved-admin-style.css', array(), MVED_VERSION );
 }
 add_action( 'admin_enqueue_scripts', 'modify_visual_editor_enqueue_scripts' );
 
@@ -58,16 +72,9 @@ function modify_visual_editor_load_plugin_textdomain() {
 add_action( 'plugins_loaded', 'modify_visual_editor_load_plugin_textdomain' );
 
 
-/** Disable WordPress Admin Bar for all users but admins.
-add_action('after_setup_theme', 'remove_admin_bar');
-
-function remove_admin_bar() {
-if (!current_user_can('administrator') && !is_admin()) {
-  show_admin_bar(false);
-}
-}
-//Disable WordPress Admin Bar for all users but admins.
-	  show_admin_bar(false);
-*/
+        require_once(ABSPATH . 'wp-includes/pluggable.php');
+        require_once(ABSPATH . 'wp-includes/user.php');
+        require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+      
 
 require_once( 'mved-admin.php' );
