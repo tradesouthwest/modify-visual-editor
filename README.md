@@ -25,7 +25,8 @@ This plugin disables the visual editor drastically. Even if a user checks the bo
 
 = I only see one option =
 
-This current version is cut and dry. No options other than turn on or off
+This current version is cut and dry. No options other than turn on or off.
+for example, the user_can levels are not active and I hope to add very soon.
 
 = Can you add features? =
 
