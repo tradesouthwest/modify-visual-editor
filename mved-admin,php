@@ -142,10 +142,10 @@ function mved_selection_field_render()
 
             <h2><?php _e( 'Modify Visual Editor', 'mved' ); ?></h2>
 
-            <form method="post" action="">
-            <?php settings_fields('mved_settings'); ?>
-
             <form name"mved_usermeta_form" method="POST" action="">
+	    
+	    
+                <?php settings_fields('mved_settings'); ?>
 
 
                 <table class="plugin-options-table"><tbody>
@@ -269,8 +269,4 @@ function mved_hide_admin_bar() {
         }
         return false;
     }
-
-
-
-
 ?>
