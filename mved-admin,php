@@ -7,13 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 add_action( 'admin_menu', 'mved_add_admin_menu' );
 add_action( 'admin_init', 'mved_settings_init' );
 
+
 //add a new menu for the admin
 // $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position
 function mved_add_admin_menu() {
 
 	add_menu_page(
          __( 'Modify Visual Editor', 'mved' ),
-         __( 'Settings for MVED', 'mved' ),
+         __( 'Modify Visual Ed', 'mved' ),
         'manage_options',
         'modify-visual-editor',
         'mved_options_page'
@@ -22,7 +23,8 @@ function mved_add_admin_menu() {
 }
 
 //settings
-function mved_settings_init(  ) {
+function mved_settings_init()
+{
 
 	register_setting(
         'pluginPage',
@@ -37,78 +39,83 @@ function mved_settings_init(  ) {
 
 	add_settings_section(
 		'mved_pluginPage_section',
-		__( 'Turn Off Visual Editor Drastically', 'mved' ),
+		__( 'Turns On or Off the Visual Editor to disallow using Visual Editor tab.', 'mved' ),
 		'mved_settings_section_callback',
 		'pluginPage'
 	);
 
 	add_settings_field(
-		'mvedASelect',
-		__( 'Select to Turn ON or OFF Visual Editor', 'mved' ),
+		'mved_setting-id',
+		'',
 		'mved_selection_field_render',
 		'pluginPage',
 		'mved_pluginPage_section'
 	);
 
-    add_option(
-        'mvedASelect',
-        'true',
-        '',
-        'yes'
+    add_option( 'mvedASelect', 'no', '', 'yes'
+    );
+    add_option( 'mvedBSelect', 'no', '', 'yes'
     );
 }
 
-function mved_disable_visual_editor($meta_key, $meta_value) {
+// Query for users based on the meta data
 
-    update_user_meta( '', $meta_key, $meta_value );
-
-}
-
-//render field
 function mved_selection_field_render()
 {
-    if (isset($_POST['mvedASelect'])) {
+    if (isset($_POST['mvedASelect']))
+    {
+
+    /**
+     * Disable the visual editor for all users
+     *
+     * Ignores the passed $userID because we're disabling for all users.
+     */
+    //$user_id, $meta_key, $meta_value
 
         $mvedASelect       = $_POST['mvedASelect'];
         update_option('mvedASelect', $_POST['mvedASelect']);
 
         $mvedASelect_key   = 'rich_edting';
-        $mvedASelect_value = get_option('mvedASelect', 'true');
+        $user_ID           = '';
+        $mvedASelect_value = get_option('mvedASelect', '');
 
         //update user meta field `rich_editing`
-       $user_query = update_user_meta( '', $mvedASelect_key, $mvedASelect_value );
 
-    if($user_query)
-        {
-        $message = "works";
-    echo '<div class="updated"><p><strong> Editor is set <br/> '. $message;
-    echo '</strong></p></div>';
-        }
-        else { echo $mvedASelect_value . 'no_go';
+        if( $mvedASelect_value == 'no' ) {
+
+        /**
+         * Add an action to catch profile updates.
+         */
+            remove_action('profile_update','mved_update_user_editor_status');
+            mved_update_user_editor_status('', 'false');
+            add_action('profile_update','mved_update_user_editor_status');
+
+            echo '<div class="updated fade"><p><strong> Editor is OFF <br/> ';
+            echo '</strong></p></div>';
             }
-    }
 
-    //$value
 
-    //grab content
+            elseif( $mvedASelect_value == 'yes' ) {
+                remove_action('profile_update','mved_update_user_editor_status');
+                mved_update_user_editor_status('', 'true');
+                add_action('profile_update','mved_update_user_editor_status');
 
-    /**
-     * Query MySQL DB for its version
-     * @return string|false
-     */
-    function getMySqlVersion() {
-        global $wpdb;
-        $rows = $wpdb->get_results('select version() as mysqlversion');
-        if (!empty($rows)) {
-             return $rows[0]->mysqlversion;
+            echo '<div class="updated fade"><p><strong> Editor is ON <br/> ';
+            echo '</strong></p></div>';
+            }
+
+                else {
+                echo $mvedASelect_value . ' no_go';
+                }
         }
-        return false;
-    }
-?>
-        <div class="wrap">
+
+    ?>
+
+
             <h2><?php _e('System Settings', 'mved'); ?></h2>
-            <table cellspacing="1" cellpadding="2"><tbody>
-            <tr><td><?php _e('System', 'mved'); ?></td><td><?php echo php_uname(); ?></td></tr>
+            <table class="table-condensed-options-table"><tbody>
+            <tr><td><?php _e('System', 'mved'); ?></td>
+                <td><?php echo php_uname(); ?></td></tr>
             <tr><td><?php _e('PHP Version', 'mved'); ?></td>
                 <td><?php echo phpversion(); ?>
                 <?php
@@ -132,77 +139,80 @@ function mved_selection_field_render()
                 </td>
             </tr>
             </tbody></table>
-            <h2><?php _e( 'Settings for MVED', 'mved' ); ?></h2>
+
+            <h2><?php _e( 'Modify Visual Editor', 'mved' ); ?></h2>
 
             <form method="post" action="">
             <?php settings_fields('mved_settings'); ?>
 
-<form name"mved_usermeta_form" method="POST" action="">
+            <form name"mved_usermeta_form" method="POST" action="">
 
-                <style type="text/css">
-                    table.plugin-options-table {width: 100%; padding: 0;}
-                    table.plugin-options-table tr:nth-child(even) {background: #f9f9f9}
-                    table.plugin-options-table tr:nth-child(odd) {background: #FFF}
-                    table.plugin-options-table tr:first-child {width: 35%;}
-                    table.plugin-options-table td {vertical-align: middle;}
-                    table.plugin-options-table td+td {width: auto}
-                    table.plugin-options-table td > p {margin-top: 0; margin-bottom: 0;}
-                </style>
+
                 <table class="plugin-options-table"><tbody>
                     <tr valign="top">
-                        <th scope="row"><p><label for="mvedASelect"><?php __( 'Turns On or Off the Visual Editor', 'mved' ); ?></label></p></th>
-                        <td><p><select name="mvedASelect" id="mvedASelect">
-                               <option value="false" >false</option>
-                               <option value="true" >true</option>
-                               </select></p>
+                        <td><p><label for="mvedASelect">
+                <?php _e( 'Turns On or Off the Visual Editor', 'mved' ); ?>
+                        </label></p></td>
+                        <td>
+                            <p><select name="mvedASelect" id="mvedASelect">
+                        <?php
+                            $mvedASelect_value = get_option('mvedASelect', 'yes');
+                            $isSelected = ' selected="selected"';
+                        ?>
+                                <option value="yes" <?php if( $mvedASelect_value == 'yes' )
+                                echo $isSelected; ?>>ON</option>
+                                <option value="no" <?php if( $mvedASelect_value == 'no' )
+                                echo $isSelected; ?>>OFF</option>
+                            </select></p>
                         </td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row"><p><label for="mvedULevel">Which user role can do something</label></p></th>
-                                <td>
-                                            <p><select name="mvedULevel" id="mvedULevel">
-                                <option value="Administrator" selected>Administrator</option>
-                                    <option value="Editor" >Editor</option>
-                                    <option value="Author" >Author</option>
-                                    <option value="Contributor" >Contributor</option>
-                                    <option value="Subscriber" >Subscriber</option>
-                                    <option value="Anyone" >Anyone</option>
+                        <td><p><label for="mvedULevel">
+                            <?php _e( 'Choose who has permissions', 'mved' ); ?>
+                        <small><?php _e( 'Users above or equal to:', 'mved' ); ?></small>
+                            </label></p>
+                        </td>
+                        <td>
+                            <p><select name="mvedULevel" id="mvedULevel">
+                            <option value="Administrator" selected>Administrator</option>
+                            <option value="Editor" >Editor</option>
+                            <option value="Author" >Author</option>
+                            <option value="Contributor" >Contributor</option>
+                            <option value="Subscriber" >Subscriber</option>
+                            <option value="Anyone" >Anyone</option>
                             </select></p>
-                                            </td>
-                            </tr>
-                </tbody></table>
-<?php
-    // create a nonce field
-    wp_nonce_field( 'new_mvedASelect_nonce', 'mvedASelect_nonce' );
-?>
-                <p class="submit"><input type="submit" class="button-primary"
-                          value="<?php _e('Save Changes', 'mved') ?>"/>
-                </p>
-            </form>
-        </div>
+                        </td>
+                        </tr>
 
-<div class="section">
-<!--
-<form name="mved_get_usermeta_form" action="" method="POST" onsubmit="return get_user_by_meta_data();">
-<input type="submit" value="View ALL users status" id="viewAll">
-</form>
-<div id="get_user_by_meta_data"></div>
--->
-</div>
+                    <tr valign="top">
+                        <td><p><label for="mvedBSelect">
+                        <?php _e( 'Turns On or Off the Admin Menu Bar', 'mved' ); ?>
+                        </label></p></td>
+                        <td>
+                            <p><select name="mvedBSelect" id="mvedBSelect">
+                        <?php
+                            $mvedBSelect_value = get_option('mvedBSelect', 'yes');
+                            $isSelected = ' selected="selected"';
+                        ?>
 
-</div>
+                                <option value="yes" <?php if( $mvedBSelect_value == 'yes' )
+                                echo $isSelected; ?>>ON</option>
+                                <option value="no" <?php if( $mvedBSelect_value == 'no' )
+                                echo $isSelected; ?>>OFF</option>
+                            </select></p>
+                        </td>
+                    </tr></tbody></table>
 
 
-    </div>
 <?php
 }
 ?>
 <?php
 
 //callback
-function mved_settings_section_callback(  ) {
+function mved_settings_section_callback( ) {
 
-echo __( 'Turns On or Off the Visual Editor to disallow using Visual Editor tab.', 'mved' );
+echo '<div class="wrap"><p id="tswMved"><img src="' . plugins_url( basename( __DIR__ )) . '/assets/tswlogo.png" alt="TSW=|=" height="32"/> <small>Tradesouthwest =|=</small></p>';
 
 }
 
@@ -211,73 +221,56 @@ echo __( 'Turns On or Off the Visual Editor to disallow using Visual Editor tab.
 function mved_options_page()
 {
 
-	  ?>
+
+		esc_attr( '<h2>Modify Visual Editor</h2>' );
 
 
-		<h2>Modify Visual Editor</h2>
-
-		<?php
 		settings_fields( 'pluginPage' );
 		do_settings_sections( 'pluginPage' );
-		?>
 
+        // create a nonce field
+        wp_nonce_field( 'new_mvedASelect_nonce', 'mvedASelect_nonce' );
 
-
-	<?php
+        submit_button();
+        echo '    </p>
+            </form>
+        </div>';
 
 }
 
-
-//gets value of usermeta
-function get_user_by_meta_data( $meta_key, $meta_value ) {
-
-	// Query for users based on the meta data
-	$user_query = new WP_User_Query(
-		array(
-			'meta_key'	 =>	'rich_editing',
-			'meta_value' =>	$metavalue
-		)
-	);
-	// Get the results from the query, returning the first user
-	$users = $user_query->get_results();
-
-	return $user = empty ( $users[0] ) ? null : $users[0];
-
-} // end get_user_by_meta_data
-
-
+// Hide Admin Bar for All Users Except Adminministrators
+function mved_hide_admin_bar() {
+    if (!current_user_can('administrator') && !is_admin()) {
+        show_admin_bar(false);
+    }
+}
+//add_filter('show_admin_bar', '__return_false'); <-alternative
+//add_action('after_setup_theme', 'mved_hide_admin_bar');
 
     /**
      * @param  $name string name of a database table
      * @return string input prefixed with the WordPress DB table prefix
-     * plus the prefix for this plugin 
+     * plus the prefix for this plugin
      */
     function prefixTableName($name) {
         global $wpdb;
         return $wpdb->prefix .  strtolower($this->prefix($name));
     }
 
+    /**
+     * Query MySQL DB for its version
+     * @return string|false
+     */
+    function getMySqlVersion() {
+        global $wpdb;
+        $rows = $wpdb->get_results('select version() as mysqlversion');
+        if (!empty($rows)) {
+             return $rows[0]->mysqlversion;
+        }
+        return false;
+    }
 
-/**
- * Disable the visual editor for all users
- *
- * Ignores the passed $userID because we're disabling for all users.
- */
-//$user_id, $meta_key, $meta_value
 
-/**
- * Add an action to catch profile updates and new users.
- */
-
-add_action( 'profile_update', 'mved__update_usermeta_modify_visual_editor' );
-add_action( 'user_register', 'mved__update_usermeta_modify_visual_editor' );
-
-function requireExtraPluginFiles() {
-        require_once(ABSPATH . 'wp-includes/pluggable.php');
-        require_once(ABSPATH . 'wp-includes/user.php');
-        require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-        
-}
 
 
 ?>
