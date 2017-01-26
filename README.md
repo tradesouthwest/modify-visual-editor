@@ -7,6 +7,7 @@ Tags: visual editor, disable visual editor, tinymce, disable tinymce
 Requires at least: 4.0
 Tested up to: 4.7.1
 Stable tag: 0.1.0
+License: Compatible with the GNU General Public License v2 or higher
 
 
 This plugin disables the visual editor for all users across the whole site. You could also remove the wp-includes/js/tinymce/ directory but that is not prudent. This plugin actually leaves the editor in place for posts and pages as well as custom posts types. Very handy for developers who do not want other users changing HTML text. Plugin, on deactvation, will update usermeta and reset the database ( $prefix_usermeta ) back to 'true for meta_value 'rich_edting' and clears options so plugin will not linger after uninstall.
