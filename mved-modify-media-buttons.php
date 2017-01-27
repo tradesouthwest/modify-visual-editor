@@ -7,16 +7,15 @@ $buttons[] = 'fontselect';
 $buttons[] = 'fontsizeselect';
 $buttons[] = 'styleselect';
 $buttons[] = 'backcolor';
-$buttons[] = 'newdocument';
+//$buttons[] = 'newdocument';
 $buttons[] = 'cut';
 $buttons[] = 'copy';
 $buttons[] = 'charmap';
-$buttons[] = 'hr';
+//$buttons[] = 'hr';
 $buttons[] = 'visualaid';
 //$buttons[] = 'del';
 //$buttons[] = 'sub';
 //$buttons[] = 'sup';
-//$buttons[] = 'cleanup';
 
 return $buttons;
 }
