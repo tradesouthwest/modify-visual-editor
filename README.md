@@ -1,5 +1,6 @@
 === Modify Visual Editor ===
-Plugin URI: http://themes.tradesouthwest.com/wordpress/plugins/Modify-Visual-Editor/
+ 
+ Plugin URI: http://themes.tradesouthwest.com/wordpress/plugins/Modify-Visual-Editor/
  Donate link: http://tradesouthwest.com/paystation.php/
  Author: tradesouthwest
  Author URI: http://tradesouthwest.com/
